@@ -4,8 +4,8 @@ memory.limit(size = 10000)
 
 # Importando la Base de datos. 
 
-equipamiento = read.csv("G:/backup 13-04-12/MaRcO/TECHO/indice de riqueza relativa/CSV/EH2017_Equipamiento.csv", sep =";")
-personas = read.csv("G:/backup 13-04-12/MaRcO/TECHO/indice de riqueza relativa/CSV/EH2017_Persona.csv", sep =";")
+equipamiento = read.csv("/home/marco/Documents/techo/indice de riqueza relativa/CSV/EH2017_Equipamiento.csv", sep =";")
+personas = read.csv("/home/marco/Documents/techo/indice de riqueza relativa/CSV/EH2017_Persona.csv", sep =";")
 
 #seleccionando los items
 equipamiento <- equipamiento[which( equipamiento$ITEM != 1),]
@@ -148,7 +148,7 @@ round(clusterUrbano.table/nrow(bd_clusterUrbano)*100,2)
 clusterRural <- kmeans(bd_clusterRural, 3)
 clusterRural.table <- table(clusterRural$cluster)
 round(clusterRural.table/nrow(bd_clusterRural)*100,2)
-
+library(ggplot2)
 ####################################################
 ##Adjuntado clusters RURAL al data set expandido ###
 ####################################################
@@ -262,8 +262,6 @@ ggplot(general_Urbano, aes(x=cluster, y=autoAdj, fill=cluster)) +
 round(prop.table(table(general_Urbano$auto, general_Urbano$cluster), margin =2),2)
 ggplot(general_Urbano, aes(x=auto, fill=cluster)) + 
   geom_bar(aes(y=..prop.., group = cluster),position=position_dodge())
-
-
 
 
 
@@ -383,3 +381,42 @@ round(prop.table(table(bd_OtrosDept$auto, bd_OtrosDept$cluster), margin =2),2)
 ggplot(bd_OtrosDept, aes(x=auto, fill=cluster)) + 
   geom_bar(aes(y=..prop.., group = cluster),position=position_dodge())
 
+
+
+
+
+########################
+#Hallando las distancias entre los centroides de la clasificación por DEPARTAMENTOS
+# Elegimos las filas  a comparar en función de cuales clusters equivalen a qué categoría
+
+distMidDep<-(sqrt(sum((clusterLpScz$centers[1,]-clusterOtros$centers[3,]
+)^2)))
+#distMidDep
+distLowDep<-(sqrt(sum((clusterLpScz$centers[3,]-clusterOtros$centers[1,]
+)^2)))
+#distLowDep
+distHighDep<-(sqrt(sum((clusterLpScz$centers[2,]-clusterOtros$centers[2,]
+)^2)))
+#distHighDep
+
+distDeptos <- c(distLowDep, distMidDep, distHighDep)
+
+#Hallando las distancias entre los centroides de la clasificación por AREAS
+# Elegimos las filas  a comparar en función de cuales clusters equivalen a qué categoría
+distMidArea<-(sqrt(sum((clusterUrbano$centers[2,]-clusterRural$centers[1,]
+)^2)))
+#distMidArea
+distLowArea<-(sqrt(sum((clusterUrbano$centers[1,]-clusterRural$centers[2,]
+)^2)))
+#distLowArea
+distHighArea<-(sqrt(sum((clusterUrbano$centers[3,]-clusterRural$centers[3,]
+)^2)))
+#distHighArea
+distArea <- c(distLowArea, distMidArea, distHighArea)
+
+distancias <-as.data.frame(matrix(c(distArea,distDeptos), ncol = 2  ))
+names(distancias) <- c("distArea", "distDeptos") 
+distancias <- rbind( distancias , colSums(distancias))
+rownames(distancias) <- c("low","mid","high", "suma")
+distancias
+    
